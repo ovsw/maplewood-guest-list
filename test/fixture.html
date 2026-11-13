@@ -1,0 +1,89 @@
+<!doctype html>
+<!--
+  A stand-in for the Aluvii booking page (More > Guest List), with made-up
+  guests. It copies how Aluvii behaves: a guest is saved when the name field
+  loses focus, and the whole table body is then drawn again.
+  URL options: ?count=16 guest count, ?filled=2 guests already saved,
+  ?blank=1 one more saved guest whose name was deleted, ?failAt=3 the third
+  save fails, ?late=1 the table appears after a delay.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Guest list fixture</title>
+    <link rel="stylesheet" href="content.css" />
+    <style>
+      body { font-family: sans-serif; padding: 24px; }
+      .form-control { width: 90%; padding: 4px; }
+    </style>
+  </head>
+  <body>
+    <input type="hidden" id="hdnGuestCount" />
+    <div id="divLoadContent2"></div>
+    <script>
+      const options = new URLSearchParams(location.search)
+      const guestCount = Number(options.get('count') ?? 16)
+      const failAt = Number(options.get('failAt') ?? 0)
+      const madeUp = ['Ada Fixture', 'Ben Sample', 'Cy Placeholder']
+      let nextId = 5000
+      let saves = 0
+      const guests = madeUp
+        .slice(0, Number(options.get('filled') ?? 0))
+        .map((name) => ({ id: nextId++, name }))
+      if (options.get('blank')) guests.push({ id: nextId++, name: '' })
+      window.savedGuests = guests
+      document.getElementById('hdnGuestCount').value = guestCount
+
+      const esc = (text) => text.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+      const row = (id, guestId, name) =>
+        `<tr data-BookDetailId='row_BookedGuestDetail_${id}'>` +
+        `<td><input class='form-control' type='text' id='guest_Name_${id}' value="${esc(name)}" ` +
+        `data-GuestName="${esc(name)}" data-guestDetailId='${guestId}' ` +
+        `onblur='return UpdateBookedGuestName(this)'></td>` +
+        `<td><input class='form-control' type='text' id='guest_Mobile_${guestId}' ` +
+        `data-guestDetailId='${guestId}'></td></tr>`
+
+      function GetBookGuestDetails() {
+        let html = guests.map((guest) => row(guest.id, guest.id, guest.name)).join('')
+        for (let minus = -1; guests.length - minus - 1 < guestCount; minus--) {
+          html += row(minus, 0, '')
+        }
+        const body = document.querySelector('#GuestList-Table tbody')
+        body.innerHTML = ''
+        body.innerHTML = html
+      }
+
+      function UpdateBookedGuestName(sender) {
+        const name = sender.value
+        if (sender.getAttribute('data-GuestName') === name) return
+        saves += 1
+        const failed = saves === failAt
+        const guestId = Number(sender.getAttribute('data-guestDetailId'))
+        // Aluvii covers the page while it saves. That changes the page without
+        // redrawing the table, which must not pass for a saved name.
+        const overlay = document.body.appendChild(document.createElement('div'))
+        overlay.textContent = 'Processing'
+        setTimeout(() => {
+          overlay.remove()
+          if (failed) return
+          const saved = guests.find((guest) => guest.id === guestId)
+          if (saved) saved.name = name.trim()
+          else guests.push({ id: nextId++, name: name.trim() })
+          GetBookGuestDetails()
+        }, 30)
+      }
+
+      function loadGuestList() {
+        document.getElementById('divLoadContent2').innerHTML =
+          `<div><table id="GuestList-Table"><thead><tr><td>Guest Name</td>` +
+          `<td>Contact Detail</td></tr></thead><tbody></tbody></table></div>`
+        GetBookGuestDetails()
+      }
+
+      if (options.get('late')) setTimeout(loadGuestList, 200)
+      else loadGuestList()
+    </script>
+    <script src="parse.js"></script>
+    <script src="content.js"></script>
+  </body>
+</html>

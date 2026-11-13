@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Maplewood guest list paste",
+  "version": "0.1.0",
+  "description": "Paste a birthday party guest list into an Aluvii booking instead of typing each name.",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://maplewoodyearround.aluvii.com/*"
+      ],
+      "js": [
+        "parse.js",
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}

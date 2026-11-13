@@ -1,0 +1,15 @@
+{
+  "name": "maplewood-guest-list",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Chrome extension that pastes a party guest list into an Aluvii booking",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/parse.test.mjs",
+    "test:e2e": "node --test test/content.e2e.mjs",
+    "zip": "rm -f maplewood-guest-list.zip && cd extension && zip -qr ../maplewood-guest-list.zip . -x 'icons/icon.svg'"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}
